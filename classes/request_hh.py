@@ -1,51 +1,51 @@
 from abc import ABC, abstractmethod
-import os
 import requests
+import time
+import json
 
 
 class Engine(ABC):
     word = 'Python'
 
     @abstractmethod
-    def get_request_employer(self):
+    def get_request_company(self):
         pass
 
     @abstractmethod
-    def get_request_vacant(self, employers_list):
+    def get_request_vacantcies(self, employers_list):
         pass
 
 
 class HH(Engine):
 
-    def get_request_employer(self):
+    def get_request_company(self):
         """
         Парсим компании с ресурса HeadHunter
         """
-        my_auth_data = {'X-Api-App-Id': os.environ['HH_API_KEY']}
         url = 'https://api.hh.ru/vacancies?text=' + self.word
-        employers_list = []
+        company_list = []
         for item in range(10):
-            request_hh = requests.get(url, headers=my_auth_data,
-                                      params={"keywords": self.word, 'page': item}).json()['items']
+            request_hh = requests.get(url, params={"keywords": self.word}).json()['items']
+            time.sleep(0.5)
             for item2 in request_hh:
-                if len(employers_list) == 10:
+                if len(company_list) == 10:
                     break
-                if item2 in employers_list:
+                if item2 in company_list:
                     continue
-                employers_list.append(item2['employer']['name'])
-        return employers_list
+                company_list.append({"employer_id": item2['employer']['id'],
+                                     "employer_name": item2['employer']['name']})
+        return company_list
 
-    def get_request_vacant(self, employers_list):
+    def get_request_vacantcies(self, company_list):
         """
         Парсим данные по комнанияс с ресурса HeadHunter
         """
         vacancies_list_hh = []
-        for word in employers_list:
-            my_auth_data = {'X-Api-App-Id': os.environ['HH_API_KEY']}
-            url = 'https://api.hh.ru/vacancies?text=' + word
-            for item in range(1):
-                request_hh = requests.get(url, headers=my_auth_data,
-                                          params={"keywords": word, 'page': item}).json()['items']
+        for id in company_list:
+            url = 'https://api.hh.ru/vacancies?' + id['employer_id']
+            for item in range(10):
+                request_hh = requests.get(url, params={"employer_id": id}).json()['items']
+                time.sleep(0.5)
                 for item2 in request_hh:
                     if item2["salary"] is None:
                         item2["salary"] = {}
@@ -62,11 +62,43 @@ class HH(Engine):
                     vacancies_list_hh.append(item2)
         return vacancies_list_hh
 
+    def insert_vacancies(self, data):
+        """
+        Запись данных в файл с сохранением структуры и исходных данных
+        """
+        vacant_hh = []
+        with open('vacantes.json', "w", encoding='UTF-8') as file:
+            for i in range(len(data)):
+                vacant_hh.append(
+                    {
+                        "source": 'HeadHunter',
+                        "name": data[i]['name'],
+                        "description": data[i]['snippet']['responsibility'],
+                        "url": data[i]['alternate_url'],
+                        "city": data[i]["area"]["name"],
+                        "employer_name": data[i]['employer']['name'],
+                        "employer_id": data[i]['employer']['id'],
+                        "salary_from": data[i]["salary"]["from"],
+                        "salary_to": data[i]["salary"]["to"],
+                        "date": data[i]['published_at']
+                    }
+                )
+            json.dump(vacant_hh, file, indent=4, ensure_ascii=False)
+        return vacant_hh
 
-i = HH()
-employers_list = i.get_request_employer()
-print(employers_list)
-vacants = i.get_request_vacant(employers_list)
-for i in vacants:
-    if i['employer']['name'] == 'Spectr':
-        print(i['employer']['name'])
+    def insert_company(self, data):
+        """
+        Запись данных в файл с сохранением структуры и исходных данных
+        """
+        company_hh = []
+        with open('companys.json', "w", encoding='UTF-8') as file:
+            for i in range(len(data)):
+                company_hh.append(
+                    {
+                        "employer_name": data[i]['employer_id'],
+                        "employer_id": data[i]['employer_name'],
+
+                    }
+                )
+            json.dump(company_hh, file, indent=4, ensure_ascii=False)
+        return company_hh

@@ -1,16 +1,16 @@
-# This is a sample Python script.
+from classes.DBcreater import *
+from classes.request_hh import *
+from utils.utils import *
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+i = HH()
+company_list = i.get_request_company()
+i.insert_company(company_list)
+vacancies_list_hh = i.get_request_vacantcies(company_list)
+i.insert_vacancies(vacancies_list_hh)
+vacant_list = load_json_vacancies('vacantes.json')
+g = DBcreater()
+g.createDB()
+g.create_table_hh_companys()
+g.create_table_hh_vacancies()
+g.insert_table_hh_company(company_list)
+g.insert_table_hh_vacancies(vacant_list)
