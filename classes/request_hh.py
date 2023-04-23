@@ -23,6 +23,7 @@ class HH(Engine):
         Парсим компании с ресурса HeadHunter
         """
         url = 'https://api.hh.ru/vacancies?text=' + self.word
+        company_id = []
         company_list = []
         for item in range(10):
             request_hh = requests.get(url, params={"keywords": self.word}).json()['items']
@@ -34,17 +35,18 @@ class HH(Engine):
                     continue
                 company_list.append({"employer_id": item2['employer']['id'],
                                      "employer_name": item2['employer']['name']})
-        return company_list
+                company_id.append(item2['employer']['id'])
+        return company_list, company_id
 
-    def get_request_vacantcies(self, company_list):
+    def get_request_vacantcies(self, company_id):
         """
         Парсим данные по комнанияс с ресурса HeadHunter
         """
         vacancies_list_hh = []
-        for id in company_list:
-            url = 'https://api.hh.ru/vacancies?' + id['employer_id']
+        for id in company_id:
+            url = 'https://api.hh.ru/vacancies?' + str(id)
             for item in range(10):
-                request_hh = requests.get(url, params={"employer_id": id}).json()['items']
+                request_hh = requests.get(url, params={"employer_id": str(id)}).json()['items']
                 time.sleep(0.5)
                 for item2 in request_hh:
                     if item2["salary"] is None:
@@ -64,7 +66,7 @@ class HH(Engine):
 
     def insert_vacancies(self, data):
         """
-        Запись данных в файл с сохранением структуры и исходных данных
+        Запись данных о вакансиях в файл с сохранением структуры и исходных данных
         """
         vacant_hh = []
         with open('vacantes.json', "w", encoding='UTF-8') as file:
@@ -88,15 +90,15 @@ class HH(Engine):
 
     def insert_company(self, data):
         """
-        Запись данных в файл с сохранением структуры и исходных данных
+        Запись данных компаний в файл с сохранением структуры и исходных данных
         """
         company_hh = []
         with open('companys.json', "w", encoding='UTF-8') as file:
             for i in range(len(data)):
                 company_hh.append(
                     {
-                        "employer_name": data[i]['employer_id'],
-                        "employer_id": data[i]['employer_name'],
+                        "employer_name": data[i]['employer_name'],
+                        "employer_id": data[i]['employer_id']
 
                     }
                 )
