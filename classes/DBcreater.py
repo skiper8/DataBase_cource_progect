@@ -50,7 +50,7 @@ class DBcreater:
                                 url varchar(200),
                                 description text,
                                 salary int,
-                                country varchar(50),
+                                city varchar(50),
                                 company_id int,
                                 company_name varchar(100) NOT NULL,
                                 CONSTRAINT fk_hh_vacancies_hh_companys FOREIGN KEY(company_id) REFERENCES hh_companys(company_id)
