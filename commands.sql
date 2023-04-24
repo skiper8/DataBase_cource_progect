@@ -3,7 +3,7 @@ SELECT DISTINCT(company_name), COUNT(*) FROM hh_vacancies
 GROUP BY company_name;
 
 ---Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию.
-SELECT company_name, vacantci_title, salary, url FROM hh_vacancies;
+SELECT company_name, title, salary, url FROM hh_vacancies;
 
 ---Получает среднюю зарплату по вакансиям.
 SELECT AVG(salary) AS average_salary FROM hh_vacancies;

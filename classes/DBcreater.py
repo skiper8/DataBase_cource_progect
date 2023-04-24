@@ -45,6 +45,7 @@ class DBcreater:
         with psycopg2.connect(dbname='hh', **self.params) as conn:
             with conn.cursor() as cur:
                 cur.execute("""CREATE TABLE IF NOT EXISTS hh_vacancies(
+                                vacanci_id int UNIQUE,
                                 title varchar(100),
                                 url varchar(200),
                                 description text,
@@ -56,19 +57,21 @@ class DBcreater:
                                 );""")
         conn.commit()
 
-    def insert_table_hh_company(self, company_list):
+    def insert_table_hh_company(self, data):
         with psycopg2.connect(dbname='hh', **self.params) as conn:
             with conn.cursor() as cur:
-                for item in company_list:
-                    cur.executemany("INSERT INTO hh_companys VALUES (%s, %s)",
+                for item in data:
+                    cur.executemany("INSERT INTO hh_companys VALUES (%s, %s) "
+                                    "ON CONFLICT (company_id) DO NOTHING",
                                     [(item['employer_id'], item['employer_name'])])
-
-    def insert_table_hh_vacancies(self, vacant_list):
+    def insert_table_hh_vacancies(self, data):
         with psycopg2.connect(dbname='hh', **self.params) as conn:
             with conn.cursor() as cur:
-                for item in vacant_list:
-                    cur.executemany("INSERT INTO hh_vacancies VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                                    [(item['name'],
+                for item in data:
+                    cur.executemany("INSERT INTO hh_vacancies VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                                    "ON CONFLICT(vacanci_id) DO NOTHING",
+                                    [(item['vacanci_id'],
+                                      item['name'],
                                       item['url'],
                                       item['description'],
                                       item['salary_to'],

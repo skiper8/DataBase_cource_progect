@@ -5,8 +5,7 @@ import json
 
 
 class Engine(ABC):
-    word = 'Python'
-
+    word = input("Введите ключевое слово для поиска - ")
     @abstractmethod
     def get_request_company(self):
         pass
@@ -23,20 +22,15 @@ class HH(Engine):
         Парсим компании с ресурса HeadHunter
         """
         url = 'https://api.hh.ru/vacancies?text=' + self.word
-        company_id = []
-        company_list = []
-        for item in range(10):
+        company_id = set()
+        for item in range(15):
             request_hh = requests.get(url, params={"keywords": self.word}).json()['items']
             time.sleep(0.5)
             for item2 in request_hh:
-                if len(company_list) == 10:
+                if len(company_id) == 15:
                     break
-                if item2 in company_list:
-                    continue
-                company_list.append({"employer_id": item2['employer']['id'],
-                                     "employer_name": item2['employer']['name']})
-                company_id.append(item2['employer']['id'])
-        return company_list, company_id
+                company_id.add(item2['employer']['id'])
+        return company_id
 
     def get_request_vacantcies(self, company_id):
         """
@@ -44,8 +38,8 @@ class HH(Engine):
         """
         vacancies_list_hh = []
         for id in company_id:
-            url = 'https://api.hh.ru/vacancies?' + str(id)
-            for item in range(10):
+            url = 'https://api.hh.ru/vacancies/'
+            for item in range(1):
                 request_hh = requests.get(url, params={"employer_id": str(id)}).json()['items']
                 time.sleep(0.5)
                 for item2 in request_hh:
@@ -80,6 +74,7 @@ class HH(Engine):
                         "city": data[i]["area"]["name"],
                         "employer_name": data[i]['employer']['name'],
                         "employer_id": data[i]['employer']['id'],
+                        "vacanci_id": data[i]['id'],
                         "salary_from": data[i]["salary"]["from"],
                         "salary_to": data[i]["salary"]["to"],
                         "date": data[i]['published_at']
@@ -87,20 +82,3 @@ class HH(Engine):
                 )
             json.dump(vacant_hh, file, indent=4, ensure_ascii=False)
         return vacant_hh
-
-    def insert_company(self, data):
-        """
-        Запись данных компаний в файл с сохранением структуры и исходных данных
-        """
-        company_hh = []
-        with open('companys.json', "w", encoding='UTF-8') as file:
-            for i in range(len(data)):
-                company_hh.append(
-                    {
-                        "employer_name": data[i]['employer_name'],
-                        "employer_id": data[i]['employer_id']
-
-                    }
-                )
-            json.dump(company_hh, file, indent=4, ensure_ascii=False)
-        return company_hh

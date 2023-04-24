@@ -4,21 +4,20 @@ from classes.request_hh import *
 from utils.utils import *
 
 
-#i = HH()
-#company_list, company_id = i.get_request_company()
-#i.insert_company(company_list)
-#vacancies_list_hh = i.get_request_vacantcies(company_id)
-#i.insert_vacancies(vacancies_list_hh)
+parser = HH()
+print('Подождите, идет сбор данных по вашему запросу...')
+company_id = parser.get_request_company()
+vacancies_list_hh = parser.get_request_vacantcies(company_id)
+parser.insert_vacancies(vacancies_list_hh)
 
-vacant_list = load_json_file('vacantes.json')
-company_list = load_json_file('companys.json')
+vacancies_list_hh = load_json_file('vacantes.json')
 
-g = DBcreater()
-g.createDB()
-g.create_table_hh_companys()
-g.create_table_hh_vacancies()
-g.insert_table_hh_company(company_list)
-g.insert_table_hh_vacancies(vacant_list)
+db_work = DBcreater()
+db_work.createDB()
+db_work.create_table_hh_companys()
+db_work.create_table_hh_vacancies()
+db_work.insert_table_hh_company(vacancies_list_hh)
+db_work.insert_table_hh_vacancies(vacancies_list_hh)
 
-m = DBmanager()
-m.get_all_vacancies()
+#db_manager = DBmanager()
+#db_manager.get_all_vacancies()
