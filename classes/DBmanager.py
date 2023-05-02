@@ -55,10 +55,10 @@ class DBmanager:
         """
         Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например “python”.
         """
+        keyword = input("Введите слово для поиска - ")
         with psycopg2.connect(dbname='hh', **self.params) as conn:
             with conn.cursor() as cur:
-                cur.execute("""SELECT * FROM hh_vacancies
-                                WHERE vacantci_title LIKE '%Python%';""")
+                cur.execute(f"SELECT * FROM hh_vacancies WHERE title ILIKE '%{keyword}%';")
                 rows = cur.fetchall()
                 for row in rows:
                     print(row)
